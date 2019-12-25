@@ -1,6 +1,8 @@
 package sqlstats
 
 import (
+	"database/sql"
+
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -9,9 +11,16 @@ const (
 	subsystem = "connections"
 )
 
+// StatsGetter is an interface that gets sql.DBStats.
+// It's implemented by e.g. *sql.DB or *sqlx.DB.
+type StatsGetter interface {
+	Stats() sql.DBStats
+}
+
 // StatsCollector implements the prometheus.Collector interface.
 type StatsCollector struct {
-	sp StatsProvider
+	dbName string
+	sg     StatsGetter
 
 	// descriptions of exported metrics
 	maxOpenDesc           *prometheus.Desc
@@ -25,9 +34,10 @@ type StatsCollector struct {
 }
 
 // NewStatsCollector creates a new StatsCollector.
-func NewStatsCollector(sp StatsProvider) *StatsCollector {
+func NewStatsCollector(dbName string, sg StatsGetter) *StatsCollector {
 	return &StatsCollector{
-		sp: sp,
+		dbName: dbName,
+		sg:     sg,
 		maxOpenDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "max_open"),
 			"Maximum number of open connections to the database.",
@@ -93,55 +103,54 @@ func (c StatsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements the prometheus.Collector interface.
 func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
-	dbName := c.sp.DBName()
-	stats := c.sp.Stats()
+	stats := c.sg.Stats()
 
 	ch <- prometheus.MustNewConstMetric(
 		c.maxOpenDesc,
 		prometheus.GaugeValue,
 		float64(stats.MaxOpenConnections),
-		dbName,
+		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.openDesc,
 		prometheus.GaugeValue,
 		float64(stats.OpenConnections),
-		dbName,
+		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.inUseDesc,
 		prometheus.GaugeValue,
 		float64(stats.InUse),
-		dbName,
+		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.idleDesc,
 		prometheus.GaugeValue,
 		float64(stats.Idle),
-		dbName,
+		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.waitedForDesc,
 		prometheus.CounterValue,
 		float64(stats.WaitCount),
-		dbName,
+		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.blockedTimeDesc,
 		prometheus.CounterValue,
 		stats.WaitDuration.Seconds(),
-		dbName,
+		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.closedMaxIdleDesc,
 		prometheus.CounterValue,
 		float64(stats.MaxIdleClosed),
-		dbName,
+		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.closedMaxLifetimeDesc,
 		prometheus.CounterValue,
 		float64(stats.MaxLifetimeClosed),
-		dbName,
+		c.dbName,
 	)
 }
