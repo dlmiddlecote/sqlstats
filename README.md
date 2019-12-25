@@ -1,5 +1,8 @@
 # sqlstats
 
+[![GoDoc](https://godoc.org/github.com/dlmiddlecote/sqlstats?status.svg)](http://godoc.org/github.com/dlmiddlecote/sqlstats)
+[![License](https://img.shields.io/github/license/dlmiddlecote/sqlstats.svg)](https://github.com/dlmiddlecote/sqlstats/blob/master/LICENSE)
+
 A Go library for collecting [sql.DBStats](https://golang.org/pkg/database/sql/#DBStats) and exporting them in Prometheus format.
 
 ## Installation
