@@ -26,3 +26,13 @@ func NewStatsProvider(dbName string, db StatsGetter) DefaultStatsProvider {
 		db:     db,
 	}
 }
+
+// DBName implements the StatsProvider interface.
+func (p DefaultStatsProvider) DBName() string {
+	return p.dbName
+}
+
+// Stats implements the StatsGetter interface.
+func (p DefaultStatsProvider) Stats() sql.DBStats {
+	return p.db.Stats()
+}
