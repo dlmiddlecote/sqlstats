@@ -33,22 +33,22 @@ func main() {
 }
 
 func run() error {
-    // Open connection to a DB (could also use the https://github.com/jmoiron/sqlx library)
+	// Open connection to a DB (could also use the https://github.com/jmoiron/sqlx library)
 	db, err := sql.Open("postgres", "postgres://postgres:postgres@localhost:5432/postgres")
 	if err != nil {
 		return err
 	}
 
-    // Create a new collector, the name will be used as a label on the metrics
-    collector := sqlstats.NewStatsCollector("db_name", db)
+	// Create a new collector, the name will be used as a label on the metrics
+	collector := sqlstats.NewStatsCollector("db_name", db)
 
-    // Register it with Prometheus
+	// Register it with Prometheus
 	prometheus.MustRegister(collector)
 
-    // Register the metrics handler
+	// Register the metrics handler
 	http.Handle("/metrics", promhttp.Handler())
 
-    // Run the web server
+	// Run the web server
 	return http.ListenAndServe(":8080", nil)
 }
 ```
