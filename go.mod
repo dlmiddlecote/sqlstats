@@ -1,4 +1,4 @@
-module github.com/dlmiddlecote/sqlstats_collector
+module github.com/dlmiddlecote/sqlstats
 
 go 1.14
 
