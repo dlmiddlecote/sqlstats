@@ -28,7 +28,7 @@ type StatsCollector struct {
 	inUseDesc             *prometheus.Desc
 	idleDesc              *prometheus.Desc
 	waitedForDesc         *prometheus.Desc
-	blockedTimeDesc       *prometheus.Desc
+	blockedSecondsDesc    *prometheus.Desc
 	closedMaxIdleDesc     *prometheus.Desc
 	closedMaxLifetimeDesc *prometheus.Desc
 }
@@ -68,8 +68,8 @@ func NewStatsCollector(dbName string, sg StatsGetter) *StatsCollector {
 			[]string{"db_name"},
 			nil,
 		),
-		blockedTimeDesc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "blocked_time"),
+		blockedSecondsDesc: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, subsystem, "blocked_seconds"),
 			"The total time blocked waiting for a new connection.",
 			[]string{"db_name"},
 			nil,
@@ -96,7 +96,7 @@ func (c StatsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.inUseDesc
 	ch <- c.idleDesc
 	ch <- c.waitedForDesc
-	ch <- c.blockedTimeDesc
+	ch <- c.blockedSecondsDesc
 	ch <- c.closedMaxIdleDesc
 	ch <- c.closedMaxLifetimeDesc
 }
@@ -136,7 +136,7 @@ func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
 		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.blockedTimeDesc,
+		c.blockedSecondsDesc,
 		prometheus.CounterValue,
 		stats.WaitDuration.Seconds(),
 		c.dbName,
