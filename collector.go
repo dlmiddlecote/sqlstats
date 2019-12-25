@@ -21,14 +21,14 @@ type StatsCollector struct {
 	sg StatsGetter
 
 	// descriptions of exported metrics
-	maxOpenDesc        *prometheus.Desc
-	openDesc           *prometheus.Desc
-	inUseDesc          *prometheus.Desc
-	idleDesc           *prometheus.Desc
-	waitedForDesc      *prometheus.Desc
-	blockedTimeDesc    *prometheus.Desc
-	closedIdleDesc     *prometheus.Desc
-	closedLifetimeDesc *prometheus.Desc
+	maxOpenDesc           *prometheus.Desc
+	openDesc              *prometheus.Desc
+	inUseDesc             *prometheus.Desc
+	idleDesc              *prometheus.Desc
+	waitedForDesc         *prometheus.Desc
+	blockedTimeDesc       *prometheus.Desc
+	closedMaxIdleDesc     *prometheus.Desc
+	closedMaxLifetimeDesc *prometheus.Desc
 }
 
 // NewStatsCollector creates a new StatsCollector.
@@ -71,14 +71,14 @@ func NewStatsCollector(sg StatsGetter) *StatsCollector {
 			[]string{"db_name"},
 			nil,
 		),
-		closedIdleDesc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "closed_idle"),
+		closedMaxIdleDesc: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, subsystem, "closed_max_idle"),
 			"The total number of connections closed due to SetMaxIdleConns.",
 			[]string{"db_name"},
 			nil,
 		),
-		closedLifetimeDesc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "closed_lifetime"),
+		closedMaxLifetimeDesc: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, subsystem, "closed_max_lifetime"),
 			"The total number of connections closed due to SetConnMaxLifetime.",
 			[]string{"db_name"},
 			nil,
@@ -94,8 +94,8 @@ func (c StatsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.idleDesc
 	ch <- c.waitedForDesc
 	ch <- c.blockedTimeDesc
-	ch <- c.closedIdleDesc
-	ch <- c.closedLifetimeDesc
+	ch <- c.closedMaxIdleDesc
+	ch <- c.closedMaxLifetimeDesc
 }
 
 // Collect implements the prometheus.Collector interface.
@@ -139,13 +139,13 @@ func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
 		"",
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.closedIdleDesc,
+		c.closedMaxIdleDesc,
 		prometheus.CounterValue,
 		float64(stats.MaxIdleClosed),
 		"",
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.closedLifetimeDesc,
+		c.closedMaxLifetimeDesc,
 		prometheus.CounterValue,
 		float64(stats.MaxLifetimeClosed),
 		"",
