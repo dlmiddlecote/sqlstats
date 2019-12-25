@@ -5,6 +5,12 @@
 
 A Go library for collecting [sql.DBStats](https://golang.org/pkg/database/sql/#DBStats) and exporting them in Prometheus format.
 
+A [sql.DB](https://golang.org/pkg/database/sql/#DB) object represents a pool of zero or more underlying
+connections that get created and freed automatically. Connections in the pool may also be idle. There are a few settings
+([SetMaxOpenConns()](https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns), [SetMaxIdleConns()](https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns)
+and [SetConnMaxLifetime()](https://golang.org/pkg/database/sql/#DB.SetConnMaxLifetime)) that can be used to control the
+pool of connections. This library exposes stats about this pool in Prometheus format, to aid with understanding of the pool.
+
 ## Installation
 
 ```bash
