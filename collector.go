@@ -93,55 +93,57 @@ func (c StatsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements the prometheus.Collector interface.
 func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
-	dbName := c.sp.DBName()
+	//dbName := c.sp.DBName()
 	stats := c.sp.Stats()
 
-	ch <- prometheus.MustNewConstMetric(
-		c.maxOpenDesc,
-		prometheus.GaugeValue,
-		float64(stats.MaxOpenConnections),
-		dbName,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		c.openDesc,
-		prometheus.GaugeValue,
-		float64(stats.OpenConnections),
-		dbName,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		c.inUseDesc,
-		prometheus.GaugeValue,
-		float64(stats.InUse),
-		dbName,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		c.idleDesc,
-		prometheus.GaugeValue,
-		float64(stats.Idle),
-		dbName,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		c.waitedForDesc,
-		prometheus.CounterValue,
-		float64(stats.WaitCount),
-		dbName,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		c.blockedTimeDesc,
-		prometheus.CounterValue,
-		stats.WaitDuration.Seconds(),
-		dbName,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		c.closedMaxIdleDesc,
-		prometheus.CounterValue,
-		float64(stats.MaxIdleClosed),
-		dbName,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		c.closedMaxLifetimeDesc,
-		prometheus.CounterValue,
-		float64(stats.MaxLifetimeClosed),
-		dbName,
-	)
+	for _, dbName := range []string{c.sp.DBName(), "foo"} {
+		ch <- prometheus.MustNewConstMetric(
+			c.maxOpenDesc,
+			prometheus.GaugeValue,
+			float64(stats.MaxOpenConnections),
+			dbName,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			c.openDesc,
+			prometheus.GaugeValue,
+			float64(stats.OpenConnections),
+			dbName,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			c.inUseDesc,
+			prometheus.GaugeValue,
+			float64(stats.InUse),
+			dbName,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			c.idleDesc,
+			prometheus.GaugeValue,
+			float64(stats.Idle),
+			dbName,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			c.waitedForDesc,
+			prometheus.CounterValue,
+			float64(stats.WaitCount),
+			dbName,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			c.blockedTimeDesc,
+			prometheus.CounterValue,
+			stats.WaitDuration.Seconds(),
+			dbName,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			c.closedMaxIdleDesc,
+			prometheus.CounterValue,
+			float64(stats.MaxIdleClosed),
+			dbName,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			c.closedMaxLifetimeDesc,
+			prometheus.CounterValue,
+			float64(stats.MaxLifetimeClosed),
+			dbName,
+		)
+	}
 }
