@@ -19,8 +19,7 @@ type StatsGetter interface {
 
 // StatsCollector implements the prometheus.Collector interface.
 type StatsCollector struct {
-	dbName string
-	sg     StatsGetter
+	sg StatsGetter
 
 	// descriptions of exported metrics
 	maxOpenDesc           *prometheus.Desc
@@ -35,56 +34,56 @@ type StatsCollector struct {
 
 // NewStatsCollector creates a new StatsCollector.
 func NewStatsCollector(dbName string, sg StatsGetter) *StatsCollector {
+	labels := prometheus.Labels{"db_name": dbName}
 	return &StatsCollector{
-		dbName: dbName,
-		sg:     sg,
+		sg: sg,
 		maxOpenDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "max_open"),
 			"Maximum number of open connections to the database.",
-			[]string{"db_name"},
 			nil,
+			labels,
 		),
 		openDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "open"),
 			"The number of established connections both in use and idle.",
-			[]string{"db_name"},
 			nil,
+			labels,
 		),
 		inUseDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "in_use"),
 			"The number of connections currently in use.",
-			[]string{"db_name"},
 			nil,
+			labels,
 		),
 		idleDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "idle"),
 			"The number of idle connections.",
-			[]string{"db_name"},
 			nil,
+			labels,
 		),
 		waitedForDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "waited_for"),
 			"The total number of connections waited for.",
-			[]string{"db_name"},
 			nil,
+			labels,
 		),
 		blockedSecondsDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "blocked_seconds"),
 			"The total time blocked waiting for a new connection.",
-			[]string{"db_name"},
 			nil,
+			labels,
 		),
 		closedMaxIdleDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "closed_max_idle"),
 			"The total number of connections closed due to SetMaxIdleConns.",
-			[]string{"db_name"},
 			nil,
+			labels,
 		),
 		closedMaxLifetimeDesc: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, subsystem, "closed_max_lifetime"),
 			"The total number of connections closed due to SetConnMaxLifetime.",
-			[]string{"db_name"},
 			nil,
+			labels,
 		),
 	}
 }
@@ -109,48 +108,40 @@ func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
 		c.maxOpenDesc,
 		prometheus.GaugeValue,
 		float64(stats.MaxOpenConnections),
-		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.openDesc,
 		prometheus.GaugeValue,
 		float64(stats.OpenConnections),
-		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.inUseDesc,
 		prometheus.GaugeValue,
 		float64(stats.InUse),
-		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.idleDesc,
 		prometheus.GaugeValue,
 		float64(stats.Idle),
-		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.waitedForDesc,
 		prometheus.CounterValue,
 		float64(stats.WaitCount),
-		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.blockedSecondsDesc,
 		prometheus.CounterValue,
 		stats.WaitDuration.Seconds(),
-		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.closedMaxIdleDesc,
 		prometheus.CounterValue,
 		float64(stats.MaxIdleClosed),
-		c.dbName,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		c.closedMaxLifetimeDesc,
 		prometheus.CounterValue,
 		float64(stats.MaxLifetimeClosed),
-		c.dbName,
 	)
 }
