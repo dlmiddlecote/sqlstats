@@ -30,6 +30,7 @@ type StatsCollector struct {
 	blockedSecondsDesc    *prometheus.Desc
 	closedMaxIdleDesc     *prometheus.Desc
 	closedMaxLifetimeDesc *prometheus.Desc
+	closedMaxIdletimeDesc *prometheus.Desc
 }
 
 // NewStatsCollector creates a new StatsCollector.
@@ -85,6 +86,12 @@ func NewStatsCollector(dbName string, sg StatsGetter) *StatsCollector {
 			nil,
 			labels,
 		),
+		closedMaxIdletimeDesc: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, subsystem, "closed_max_idletime"),
+			"The total number of connections closed due to SetConnMaxIdletime.",
+			nil,
+			labels,
+		),
 	}
 }
 
@@ -98,6 +105,7 @@ func (c StatsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.blockedSecondsDesc
 	ch <- c.closedMaxIdleDesc
 	ch <- c.closedMaxLifetimeDesc
+	ch <- c.closedMaxIdletimeDesc
 }
 
 // Collect implements the prometheus.Collector interface.
@@ -143,5 +151,10 @@ func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
 		c.closedMaxLifetimeDesc,
 		prometheus.CounterValue,
 		float64(stats.MaxLifetimeClosed),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		c.closedMaxIdletimeDesc,
+		prometheus.CounterValue,
+		float64(stats.MaxIdleTimeClosed),
 	)
 }
